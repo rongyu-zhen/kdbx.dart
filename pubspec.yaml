@@ -9,7 +9,7 @@ environment:
 dependencies:
   logging: '>=0.11.3+2 <2.0.0'
   crypto: '>=2.0.0 <4.0.0'
-  pointycastle: '>=3.4.0 <4.0.0'
+  pointycastle: ^3.7.4
   xml: '>=4.4.0 <7.0.0'
   uuid: ">=3.0.0 <5.0.0"
   meta: '>=1.0.0 <2.0.0'
@@ -27,7 +27,6 @@ dependencies:
   # required for bin/
   args: '>1.5.0 <3.0.0'
   logging_appenders: '>=0.1.0 <2.0.0'
-  argon2_ffi_base: ^1.1.0+1
 
 dev_dependencies:
   flutter_lints: '>=2.0.0 <4.0.0'

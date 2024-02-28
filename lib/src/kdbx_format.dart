@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
-import 'package:argon2_ffi_base/argon2_ffi_base.dart';
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:kdbx/kdbx.dart';
@@ -27,6 +26,8 @@ import 'package:pointycastle/export.dart';
 import 'package:quiver/iterables.dart';
 import 'package:supercharged_dart/supercharged_dart.dart';
 import 'package:xml/xml.dart' as xml;
+
+import './internal/argon2_ffi_base.dart';
 
 final _logger = Logger('kdbx.format');
 

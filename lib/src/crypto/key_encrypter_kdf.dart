@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:argon2_ffi_base/argon2_ffi_base.dart';
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:isolates/isolate_runner.dart';
 import 'package:kdbx/kdbx.dart';
@@ -9,6 +8,8 @@ import 'package:kdbx/src/kdbx_var_dictionary.dart';
 import 'package:kdbx/src/utils/byte_utils.dart';
 import 'package:logging/logging.dart';
 import 'package:pointycastle/export.dart';
+
+import '../internal/argon2_ffi_base.dart';
 
 final _logger = Logger('key_encrypter_kdf');
 
