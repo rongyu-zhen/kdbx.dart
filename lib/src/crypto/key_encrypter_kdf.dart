@@ -9,8 +9,6 @@ import 'package:kdbx/src/utils/byte_utils.dart';
 import 'package:logging/logging.dart';
 import 'package:pointycastle/export.dart';
 
-import '../internal/argon2_ffi_base.dart';
-
 final _logger = Logger('key_encrypter_kdf');
 
 enum KdfType {

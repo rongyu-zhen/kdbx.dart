@@ -4,8 +4,10 @@ library kdbx;
 export 'src/credentials/credentials.dart'
     show Credentials, CredentialsPart, HashCredentials, PasswordCredentials;
 export 'src/credentials/keyfile.dart' show KeyFileComposite, KeyFileCredentials;
+export 'src/crypto/argon2.dart' show Argon2, Argon2Arguments;
 export 'src/crypto/key_encrypter_kdf.dart'
     show KeyEncrypterKdf, KdfType, KdfField;
+export 'src/crypto/pointycastle_argon2.dart' show PointyCastleArgon2;
 export 'src/crypto/protected_value.dart'
     show ProtectedValue, StringValue, PlainValue;
 export 'src/kdbx_binary.dart' show KdbxBinary;

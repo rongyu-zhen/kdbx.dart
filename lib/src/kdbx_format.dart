@@ -12,7 +12,7 @@ import 'package:kdbx/src/crypto/protected_salt_generator.dart';
 import 'package:kdbx/src/internal/consts.dart';
 import 'package:kdbx/src/internal/crypto_utils.dart';
 import 'package:kdbx/src/internal/extension_utils.dart';
-import 'package:kdbx/src/internal/pointycastle_argon2.dart';
+import 'package:kdbx/src/crypto/pointycastle_argon2.dart';
 import 'package:kdbx/src/kdbx_deleted_object.dart';
 import 'package:kdbx/src/kdbx_entry.dart';
 import 'package:kdbx/src/kdbx_group.dart';
@@ -27,7 +27,7 @@ import 'package:quiver/iterables.dart';
 import 'package:supercharged_dart/supercharged_dart.dart';
 import 'package:xml/xml.dart' as xml;
 
-import './internal/argon2_ffi_base.dart';
+import 'crypto/argon2.dart';
 
 final _logger = Logger('kdbx.format');
 
@@ -426,9 +426,7 @@ class _KeysV4 {
 class KdbxFormat {
   KdbxFormat([Argon2? argon2])
       : assert(kdbxKeyCommonAssertConsistency()),
-        argon2 = argon2 == null || !argon2.isImplemented
-            ? const PointyCastleArgon2()
-            : argon2;
+        argon2 = argon2 ?? const PointyCastleArgon2();
 
   final Argon2 argon2;
   static bool dartWebWorkaround = false;

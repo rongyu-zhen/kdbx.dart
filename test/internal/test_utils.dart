@@ -2,7 +2,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:kdbx/kdbx.dart';
-import 'package:kdbx/src/internal/argon2_ffi_base.dart';
 import 'package:logging/logging.dart';
 import 'package:logging_appenders/logging_appenders.dart';
 
@@ -24,7 +23,6 @@ class TestUtil {
   late final kdbxFormat = _kdbxFormat();
 
   static KdbxFormat _kdbxFormat() {
-    Argon2.resolveLibraryForceDynamic = true;
     return KdbxFormat();
   }
 

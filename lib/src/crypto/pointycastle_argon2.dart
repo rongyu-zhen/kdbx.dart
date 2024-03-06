@@ -1,18 +1,11 @@
 import 'dart:typed_data';
 import 'package:pointycastle/export.dart' as pc;
 
-import './argon2_ffi_base.dart';
+import 'argon2.dart';
 
 /// Dart-only implementation using pointycastle's Argon KDF.
 class PointyCastleArgon2 extends Argon2 {
   const PointyCastleArgon2();
-
-  @override
-  bool get isFfi => false;
-
-  @override
-  bool get isImplemented => true;
-
   pc.KeyDerivator argon2Kdf() => pc.Argon2BytesGenerator();
 
   @override

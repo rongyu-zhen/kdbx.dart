@@ -15,9 +15,6 @@ final _logger = Logger('kdbx4_test');
 void main() {
   final testUtil = TestUtil();
   final kdbxFormat = testUtil.kdbxFormat;
-  // if (!kdbxFormat.argon2.isFfi) {
-  //   throw StateError('Expected ffi!');
-  // }
   group('Reading', () {
     test('bubb', () async {
       final data = await File('test/keepassxcpasswords.kdbx').readAsBytes();
