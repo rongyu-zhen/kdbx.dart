@@ -21,7 +21,7 @@ class PlainValue implements StringValue {
 
   @override
   String toString() {
-    return 'ProtectedValue{${base64.encode(hash)}}';
+    return 'PlainValue{text: $text}';
   }
 
   @override
@@ -29,41 +29,6 @@ class PlainValue implements StringValue {
 
   @override
   int get hashCode => text.hashCode;
-}
-
-class Base64Value implements StringValue {
-  Base64Value(this._value, this._salt);
-
-  factory Base64Value.fromBinary(Uint8List value) {
-    final salt = ProtectedValue._randomBytes(value.length);
-    return Base64Value(ProtectedValue._xor(value, salt), salt);
-  }
-
-  final Uint8List _value;
-  final Uint8List _salt;
-
-  Uint8List get binaryValue => ProtectedValue._xor(_value, _salt);
-
-  Uint8List get hash => sha256.convert(binaryValue).bytes as Uint8List;
-
-  @override
-  String? getText() {
-    return base64Encode(_value);
-  }
-
-  @override
-  bool operator ==(dynamic other) =>
-      other is Base64Value && other.getText() == getText();
-
-  int? _hashCodeCached;
-
-  @override
-  int get hashCode => _hashCodeCached ??= getText().hashCode;
-
-  @override
-  String toString() {
-    return 'Base64Value{${base64.encode(hash)}}';
-  }
 }
 
 class ProtectedValue implements StringValue {

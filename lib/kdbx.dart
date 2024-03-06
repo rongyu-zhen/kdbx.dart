@@ -7,7 +7,7 @@ export 'src/credentials/keyfile.dart' show KeyFileComposite, KeyFileCredentials;
 export 'src/crypto/key_encrypter_kdf.dart'
     show KeyEncrypterKdf, KdfType, KdfField;
 export 'src/crypto/protected_value.dart'
-    show ProtectedValue, StringValue, PlainValue, Base64Value;
+    show ProtectedValue, StringValue, PlainValue;
 export 'src/kdbx_binary.dart' show KdbxBinary;
 export 'src/kdbx_consts.dart';
 export 'src/kdbx_custom_data.dart';
