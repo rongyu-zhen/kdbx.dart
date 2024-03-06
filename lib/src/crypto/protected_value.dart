@@ -32,7 +32,7 @@ class PlainValue implements StringValue {
 }
 
 class ProtectedValue implements StringValue {
-  ProtectedValue(this._value, this._salt);
+  ProtectedValue(this._value, this._salt, {this.encodeText});
 
   factory ProtectedValue.fromString(String value) {
     final valueBytes = utf8.encode(value);
@@ -46,10 +46,16 @@ class ProtectedValue implements StringValue {
     return ProtectedValue(_xor(value, salt), salt);
   }
 
+  factory ProtectedValue.fromRawBinary(Uint8List value) {
+    final salt = _randomBytes(value.length);
+    return ProtectedValue(_xor(value, salt), salt, encodeText: true);
+  }
+
   static final _random = Random.secure();
 
   final Uint8List _value;
   final Uint8List _salt;
+  final bool? encodeText;
 
   Uint8List get binaryValue => _xor(_value, _salt);
 
@@ -71,7 +77,9 @@ class ProtectedValue implements StringValue {
 
   @override
   String getText() {
-    return utf8.decode(binaryValue);
+    return encodeText == true
+        ? base64Encode(binaryValue)
+        : utf8.decode(binaryValue);
   }
 
   @override
