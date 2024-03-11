@@ -8,6 +8,41 @@ abstract class Argon2 {
   Uint8List argon2(Argon2Arguments args);
 
   Future<Uint8List> argon2Async(Argon2Arguments args);
+
+  /*
+  The format is defined in Argon2 C implementation
+    echo -n "password" | ./argon2 somesalt -t 2 -m 16 -p 4 -l 24
+    Type:           Argon2i
+    Iterations:     2
+    Memory:         65536 KiB
+    Parallelism:    4
+    Hash:           45d7ac72e76f242b20b77b9bf9bf9d5915894e669a24e6c6
+    Encoded:        $argon2i$v=19$m=65536,t=2,p=4$c29tZXNhbHQ$RdescudvJCsgt3ub+b+dWRWJTmaaJObG
+    0.188 seconds
+    Verification ok
+  */
+  static String formatArgon2Hash(
+    Argon2Arguments args,
+    Uint8List derivedKey,
+  ) {
+    String argon2Type = '';
+    switch (args.type) {
+      case ARGON2_i:
+        argon2Type = 'argon2i';
+      case ARGON2_d:
+        argon2Type = 'argon2d';
+      case ARGON2_id:
+        argon2Type = 'argon2id';
+    }
+    final String version = 'v=${args.version}';
+    final String memory = 'm=${args.memory}';
+    final String iterations = 't=${args.iterations}';
+    final String parallelism = 'p=${args.parallelism}';
+    final String saltString = base64.encode(args.salt).replaceAll('=', '');
+    final String hashString = base64.encode(derivedKey).replaceAll('=', '');
+
+    return '\$$argon2Type\$$version\$$memory,$iterations,$parallelism\$$saltString\$$hashString';
+  }
 }
 
 const int ARGON2_i = pc.Argon2Parameters.ARGON2_i;
