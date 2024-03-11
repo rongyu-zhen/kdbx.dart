@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:pointycastle/export.dart' as pc;
 
 abstract class Argon2 {
   const Argon2();
@@ -7,6 +8,10 @@ abstract class Argon2 {
 
   Future<Uint8List> argon2Async(Argon2Arguments args);
 }
+
+const int ARGON2_i = pc.Argon2Parameters.ARGON2_i;
+const int ARGON2_d = pc.Argon2Parameters.ARGON2_d;
+const int ARGON2_id = pc.Argon2Parameters.ARGON2_id;
 
 class Argon2Arguments {
   Argon2Arguments(this.key, this.salt, this.memory, this.iterations,
