@@ -52,7 +52,7 @@ void main() {
       final xml = file.body.generateXml(FakeProtectedSaltGenerator());
       final objects = xml.findAllElements(KdbxXml.NODE_DELETED_OBJECT);
       expect(objects.length, 1);
-      expect(objects.first.findElements(KdbxXml.NODE_UUID).first.text,
+      expect(objects.first.findElements(KdbxXml.NODE_UUID).first.innerText,
           entry.uuid.uuid);
     });
     test('delete group', () async {
@@ -72,7 +72,7 @@ void main() {
       final xml = file.body.generateXml(FakeProtectedSaltGenerator());
       final objects = xml.findAllElements(KdbxXml.NODE_DELETED_OBJECT);
       expect(objects.length, 4);
-      expect(objects.map((e) => e.findElements(KdbxXml.NODE_UUID).first.text),
+      expect(objects.map((e) => e.findElements(KdbxXml.NODE_UUID).first.innerText),
           objs.map((o) => o.uuid.uuid));
     });
   });

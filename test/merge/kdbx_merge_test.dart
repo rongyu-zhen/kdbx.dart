@@ -120,7 +120,7 @@ void main() {
         final deleted = xml.findAllElements(KdbxXml.NODE_DELETED_OBJECT);
         expect(deleted, hasLength(1));
         expect(
-            deleted.first.findAllElements(KdbxXml.NODE_UUID).map((e) => e.text),
+            deleted.first.findAllElements(KdbxXml.NODE_UUID).map((e) => e.innerText),
             [entryDelete.uuid.uuid]);
       }),
     );

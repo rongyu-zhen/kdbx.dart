@@ -30,10 +30,10 @@ class KeyFileCredentials implements CredentialsPart {
       }
       final xmlContent = xml.XmlDocument.parse(keyFileAsString);
       final metaVersion =
-          xmlContent.findAllElements(_nodeVersion).singleOrNull?.text;
+          xmlContent.findAllElements(_nodeVersion).singleOrNull?.innerText;
       final key = xmlContent.findAllElements(_nodeKey).single;
       final dataString = key.findElements(_nodeData).single;
-      final encoded = dataString.text.replaceAll(RegExp(r'\s'), '');
+      final encoded = dataString.innerText.replaceAll(RegExp(r'\s'), '');
       Uint8List dataBytes;
       if (metaVersion != null && metaVersion.startsWith('2.')) {
         dataBytes = convert.hex.decode(encoded) as Uint8List;

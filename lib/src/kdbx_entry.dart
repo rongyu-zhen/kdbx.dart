@@ -173,17 +173,17 @@ class KdbxEntry extends KdbxObject {
             KdbxCustomData.create(),
         super.read(ctx, parent, node) {
     _strings.addEntries(node.findElements(KdbxXml.NODE_STRING).map((el) {
-      final key = KdbxKey(el.findElements(KdbxXml.NODE_KEY).single.text);
+      final key = KdbxKey(el.findElements(KdbxXml.NODE_KEY).single.innerText);
       final valueNode = el.findElements(KdbxXml.NODE_VALUE).single;
       if (valueNode.getAttribute(KdbxXml.ATTR_PROTECTED)?.toLowerCase() ==
           'true') {
         return MapEntry(key, KdbxFile.protectedValueForNode(valueNode));
       } else {
-        return MapEntry(key, PlainValue(valueNode.text));
+        return MapEntry(key, PlainValue(valueNode.innerText));
       }
     }));
     _binaries.addEntries(node.findElements(KdbxXml.NODE_BINARY).map((el) {
-      final key = KdbxKey(el.findElements(KdbxXml.NODE_KEY).single.text);
+      final key = KdbxKey(el.findElements(KdbxXml.NODE_KEY).single.innerText);
       final valueNode = el.findElements(KdbxXml.NODE_VALUE).single;
       final ref = valueNode.getAttribute(KdbxXml.ATTR_REF);
       if (ref != null) {

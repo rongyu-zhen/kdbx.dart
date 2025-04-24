@@ -120,7 +120,7 @@ class Argon2Arguments {
   }
 
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       other is Argon2Arguments && other.toString() == toString();
 
   @override

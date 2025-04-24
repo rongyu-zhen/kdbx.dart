@@ -97,8 +97,6 @@ class KeyEncrypterKdf {
       case KdfType.Aes:
         _logger.fine('Must be using aes');
         return await encryptAes(key, kdfParameters);
-      default:
-        throw UnsupportedError('unsupported KDF Type $kdfType.');
     }
   }
 

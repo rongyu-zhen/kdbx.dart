@@ -48,7 +48,7 @@ class KdbxBinary {
       {required bool isInline}) {
     final isProtected = valueNode.getAttributeBool(KdbxXml.ATTR_PROTECTED);
     final isCompressed = valueNode.getAttributeBool(KdbxXml.ATTR_COMPRESSED);
-    var value = base64.decode(valueNode.text.trim());
+    var value = base64.decode(valueNode.innerText.trim());
     if (isCompressed) {
       value = gzip.decode(value) as Uint8List;
     }

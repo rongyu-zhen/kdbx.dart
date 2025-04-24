@@ -18,7 +18,7 @@ extension XmlElementExt on xml.XmlElement {
   }
 
   String singleTextNode(String nodeName) {
-    return findElements(nodeName).single.text;
+    return findElements(nodeName).single.innerText;
   }
 
   Iterable<xml.XmlElement> breadcrumbs() {

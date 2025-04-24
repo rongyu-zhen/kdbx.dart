@@ -102,7 +102,7 @@ abstract class KdbxSubTextNode<T> extends KdbxSubNode<T?> {
 
   @override
   T? get() {
-    final textValue = _opt(name)?.text;
+    final textValue = _opt(name)?.innerText;
     if (textValue == null) {
       return null;
     }
@@ -137,7 +137,7 @@ abstract class KdbxSubTextNode<T> extends KdbxSubNode<T?> {
 
   @override
   String toString() {
-    return '$runtimeType{${_opt(name)?.text}}';
+    return '$runtimeType{${_opt(name)?.innerText}}';
   }
 }
 
