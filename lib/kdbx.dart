@@ -30,4 +30,5 @@ export 'src/kdbx_object.dart'
         Changeable,
         ChangeEvent,
         KdbxNodeContext;
+export 'src/kdbx_xml.dart';
 export 'src/utils/byte_utils.dart' show ByteUtils;
