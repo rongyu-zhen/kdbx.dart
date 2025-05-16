@@ -101,6 +101,17 @@ class KdbxMeta extends KdbxNode implements KdbxNodeContext {
     modify(() => _customIcons[customIcon.uuid] = customIcon);
   }
 
+  void modifyCustomIcon(KdbxCustomIcon customIcon) {
+    modify(() => _customIcons[customIcon.uuid] = customIcon);
+  }
+
+  void removeCustomIcon(KdbxUuid id) {
+    if (!_customIcons.containsKey(id)) {
+      return;
+    }
+    modify(() => _customIcons.remove(id));
+  }
+
   StringNode get generator => StringNode(this, 'Generator');
 
   StringNode get databaseName => StringNode(this, 'DatabaseName')
@@ -182,7 +193,6 @@ class KdbxMeta extends KdbxNode implements KdbxNodeContext {
 
   // Merge in changes in [other] into this meta data.
   void merge(KdbxMeta other) {
-    // FIXME make sure this is finished
     if (other.databaseNameChanged.isAfter(databaseNameChanged)) {
       databaseName.set(other.databaseName.get());
       databaseNameChanged.set(other.databaseNameChanged.get());
@@ -196,9 +206,8 @@ class KdbxMeta extends KdbxNode implements KdbxNodeContext {
       defaultUserNameChanged.set(other.defaultUserNameChanged.get());
     }
     if (other.masterKeyChanged.isAfter(masterKeyChanged)) {
-      // throw UnimplementedError(
-      //     'Other database changed master key. not supported.');
-      _logger.shout('MasterKey was changed? We will not merge this (yet).');
+      masterKeyChanged.set(other.masterKeyChanged.get());
+      _logger.info('MasterKey was changed.');
     }
     if (other.recycleBinChanged.isAfter(recycleBinChanged)) {
       recycleBinEnabled.set(other.recycleBinEnabled.get());
@@ -213,7 +222,16 @@ class KdbxMeta extends KdbxNode implements KdbxNodeContext {
       _customIcons[otherCustomIcon.uuid] ??= otherCustomIcon;
     }
 
-    settingsChanged.set(other.settingsChanged.get());
+    if (otherIsNewer) {
+      historyMaxItems.set(other.historyMaxItems.get());
+      historyMaxSize.set(other.historyMaxSize.get());
+      maintenanceHistoryDays.set(other.maintenanceHistoryDays.get());
+      //TODO: keyChangeRec and keyChangeForce and database color
+    }
+
+    if (otherIsNewer) {
+      settingsChanged.set(other.settingsChanged.get());
+    }
   }
 }
 

@@ -2,7 +2,6 @@ import 'package:kdbx/kdbx.dart';
 import 'package:kdbx/src/internal/extension_utils.dart';
 import 'package:kdbx/src/kdbx_entry.dart';
 import 'package:kdbx/src/kdbx_format.dart';
-import 'package:kdbx/src/kdbx_xml.dart';
 import 'package:logging/logging.dart';
 import 'package:xml/xml.dart';
 
@@ -103,6 +102,8 @@ class KdbxGroup extends KdbxObject {
 
   BooleanNode get enableSearching => BooleanNode(this, 'EnableSearching');
 
+  BooleanNode get enableDisplay => BooleanNode(this, 'EnableDisplay');
+
   UuidNode get lastTopVisibleEntry => UuidNode(this, 'LastTopVisibleEntry');
 
   @override
@@ -180,6 +181,7 @@ class KdbxGroup extends KdbxObject {
         defaultAutoTypeSequence,
         enableAutoType,
         enableSearching,
+        enableDisplay,
         lastTopVisibleEntry,
       ];
 

@@ -156,13 +156,32 @@ class KdbxFile {
 
   /// Merges the given file into this file.
   /// Both files must have the same origin (ie. same root group UUID).
-  /// FIXME: THiS iS NOT YET FINISHED, DO NOT USE.
   MergeContext merge(KdbxFile other) {
+    if (header.version < other.header.version) {
+      throw KdbxUnsupportedException(
+          'Kdbx version of source is newer. Upgrade file version before attempting to merge.');
+    }
     if (other.body.rootGroup.uuid != body.rootGroup.uuid) {
       throw KdbxUnsupportedException(
           'Root groups of source and dest file do not match.');
     }
-    return body.merge(other.body);
+
+    if (other.body.meta.masterKeyChanged.isAfter(body.meta.masterKeyChanged)) {
+      _credentials = other.credentials;
+      header.writeKdfParameters(other.header.readKdfParameters);
+      _logger.finest('Changing MasterKey and KDF params.');
+    }
+    final ctx = body.merge(other.body);
+    // It's important that the merge operation above does not assume that the recycle
+    // bin UUID points to a valid group but once the entire merge is complete, we
+    // can safely clear the cache so that if it has been changed remotely, we reflect
+    // that in this file before the overall merge procedure is complete.
+    invalidateCachedValues();
+    return ctx;
+  }
+
+  void invalidateCachedValues() {
+    _recycleBin = null;
   }
 }
 

@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
+import 'package:clock/clock.dart';
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:kdbx/kdbx.dart';
@@ -16,7 +18,6 @@ import 'package:kdbx/src/kdbx_deleted_object.dart';
 import 'package:kdbx/src/kdbx_entry.dart';
 import 'package:kdbx/src/kdbx_group.dart';
 import 'package:kdbx/src/kdbx_header.dart';
-import 'package:kdbx/src/kdbx_xml.dart';
 import 'package:kdbx/src/utils/byte_utils.dart';
 import 'package:kdbx/src/utils/sequence.dart';
 import 'package:logging/logging.dart';
@@ -102,6 +103,19 @@ class KdbxReadWriteContext {
     if (!_binaries.remove(binary)) {
       throw KdbxCorruptedFileException(
           'Tried to remove binary which is not in this file.');
+    }
+  }
+
+  void removeUnusedBinaries(Set<int> usedIndexes) {
+    final unusedIndexes = <int>[];
+    _binaries.forEachIndexed((index, element) {
+      if (!usedIndexes.contains(index)) {
+        unusedIndexes.add(index);
+      }
+    });
+    // ignore: prefer_foreach
+    for (final index in unusedIndexes.reversed) {
+      _binaries.removeAt(index);
     }
   }
 
@@ -258,7 +272,7 @@ class KdbxBody extends KdbxNode {
       mergeContext.trackChange(object, debug: 'was deleted.');
     }
 
-    // FIXME do some cleanup.
+    cleanup();
 
     _logger.info('Finished merging:\n${mergeContext.debugChanges()}');
     final incomingObjects = other._createObjectIndex();
@@ -271,6 +285,54 @@ class KdbxBody extends KdbxNode {
       // TODO figure out what went wrong.
     }
     return mergeContext;
+  }
+
+  void cleanup() {
+    final now = clock.now().toUtc();
+    final historyMaxItems = (meta.historyMaxItems.get() ?? 0) > 0
+        ? meta.historyMaxItems.get()
+        : (double.maxFinite).toInt();
+
+    final usedCustomIcons = HashSet<KdbxUuid>();
+    final unusedCustomIcons = HashSet<KdbxUuid>();
+    final usedBinaries = <int>{};
+
+    void trackEntryForCleanup(KdbxEntry e) {
+      e.binaryEntries.toList().forEach((b) {
+        final id = ctx.findBinaryId(b.value);
+        usedBinaries.add(id);
+      });
+      if (e.customIcon != null) {
+        usedCustomIcons.add(e.customIcon!.uuid);
+      }
+    }
+
+    rootGroup.getAllEntries().forEach((e) {
+      if (e.history.length > historyMaxItems!) {
+        e.history.removeRange(0, e.history.length - historyMaxItems);
+      }
+      trackEntryForCleanup(e);
+      e.history.toList().forEach((he) {
+        trackEntryForCleanup(he);
+      });
+    });
+
+    rootGroup.getAllGroups().forEach((g) {
+      if (g.customIcon != null) {
+        usedCustomIcons.add(g.customIcon!.uuid);
+      }
+    });
+
+    meta.customIcons.forEach((key, value) {
+      if (!usedCustomIcons.contains(key)) {
+        ctx._deletedObjects.add(KdbxDeletedObject.create(ctx, key, now));
+        unusedCustomIcons.add(key!);
+      }
+    });
+
+    unusedCustomIcons.forEach(meta.removeCustomIcon);
+
+    ctx.removeUnusedBinaries(usedBinaries);
   }
 
   xml.XmlDocument generateXml(ProtectedSaltGenerator saltGenerator) {
@@ -492,6 +554,7 @@ class KdbxFormat {
 
     final output = BytesBuilder();
     final writer = WriterHelper(output);
+
     header.generateSalts();
     header.write(writer);
     final headerHash =
