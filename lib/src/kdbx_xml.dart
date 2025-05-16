@@ -31,6 +31,8 @@ class KdbxXml {
   static const NODE_PREVIOUS_PARENT_GROUP = 'PreviousParentGroup';
   static const NODE_CUSTOM_ICONS = 'CustomIcons';
   static const NODE_CUSTOM_DATA = 'CustomData';
+  static const NODE_AUTO_TYPE = 'AutoType';
+
 
   /// CustomIcons >> Icon
   static const NODE_ICON = 'Icon';

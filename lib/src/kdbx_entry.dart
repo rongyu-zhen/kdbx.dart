@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:kdbx/src/crypto/protected_value.dart';
 import 'package:kdbx/src/internal/extension_utils.dart';
+import 'package:kdbx/src/kdbx_auto_type.dart';
 import 'package:kdbx/src/kdbx_binary.dart';
 import 'package:kdbx/src/kdbx_consts.dart';
 import 'package:kdbx/src/kdbx_custom_data.dart';
@@ -16,6 +17,7 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:quiver/check.dart';
 import 'package:xml/xml.dart';
+
 
 final _logger = Logger('kdbx.kdbx_entry');
 
@@ -130,6 +132,7 @@ extension KdbxEntryInternal on KdbxEntry {
     _binaries.addAll(newBinaries);
     customData.overwriteFrom(other.customData);
     times.overwriteFrom(other.times);
+    autoType.overwriteFrom(other.autoType);
     if (includeHistory) {
       for (final historyEntry in other.history) {
         history.add(historyEntry.cloneInto(parent!, toHistoryEntry: false));
@@ -160,6 +163,7 @@ class KdbxEntry extends KdbxObject {
     this.isHistoryEntry = false,
   })  : history = [],
         customData = KdbxCustomData.create(),
+        autoType = KdbxAutoType.create(),
         super.create(file.ctx, file, 'Entry', parent) {
     icon.set(KdbxIcon.Key);
   }
@@ -171,6 +175,10 @@ class KdbxEntry extends KdbxObject {
                 .singleElement(KdbxXml.NODE_CUSTOM_DATA)
                 ?.let((e) => KdbxCustomData.read(e)) ??
             KdbxCustomData.create(),
+        autoType = node
+                .singleElement(KdbxXml.NODE_AUTO_TYPE)
+                ?.let((e) => KdbxAutoType.read(e)) ??
+            KdbxAutoType.create(),
         super.read(ctx, parent, node) {
     _strings.addEntries(node.findElements(KdbxXml.NODE_STRING).map((el) {
       final key = KdbxKey(el.findElements(KdbxXml.NODE_KEY).single.innerText);
@@ -218,6 +226,7 @@ class KdbxEntry extends KdbxObject {
   StringNode get tags => StringNode(this, 'Tags');
 
   final KdbxCustomData customData;
+  final KdbxAutoType autoType;
 
   @override
   set file(KdbxFile file) {
