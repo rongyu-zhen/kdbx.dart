@@ -33,7 +33,6 @@ class KdbxXml {
   static const NODE_CUSTOM_DATA = 'CustomData';
   static const NODE_AUTO_TYPE = 'AutoType';
 
-
   /// CustomIcons >> Icon
   static const NODE_ICON = 'Icon';
 
@@ -223,8 +222,13 @@ class BooleanNode extends KdbxSubTextNode<bool?> {
   @override
   bool? decode(String value) {
     switch (value.toLowerCase()) {
+      case '':
       case 'null':
         return null;
+      case 'yes':
+      case '1':
+      case 'enabled':
+      case 'checked':
       case 'true':
         return true;
       case 'false':
