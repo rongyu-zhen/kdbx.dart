@@ -144,30 +144,36 @@ class KdbxGroup extends KdbxObject {
     // 5. Modified in this
     // 6. Moved in other
     // 7. Moved in this
+    // 8. Created in other
+    // 9. Created in this
 
     for (final otherObj in other) {
       final meObj = me.findByUuid(otherObj.uuid);
       if (meObj == null) {
-        // moved or deleted.
+        // 3,6,7,8
 
         final movedObj = mergeContext.objectIndex[otherObj.uuid];
         if (movedObj == null) {
-          // item was created in the other file. we have to import it
-          final newMeObject = importToHere(otherObj);
-          mergeContext.trackChange(newMeObject, debug: '(was created)');
-          newMeObject.merge(mergeContext, otherObj);
-        } else {
-          // item was moved.
-          if (otherObj.wasMovedAfter(movedObj)) {
-            // item was moved in the other file, so we have to move it here.
-            file.move(movedObj, this);
-            mergeContext.trackChange(movedObj, debug: 'moved to another group');
-          } else {
-            // item was moved in this file, so nothing to do.
+          // 3,8
+          if (!mergeContext.deletedObjects.containsKey(otherObj.uuid)) {
+            // 8
+            final newMeObject = importToHere(otherObj);
+            mergeContext.trackChange(newMeObject, debug: 'created');
+            newMeObject.merge(mergeContext, otherObj);
           }
+          // else 3
+        } else {
+          // 6,7
+          if (otherObj.wasMovedAfter(movedObj)) {
+            // 6
+            file.move(movedObj, this);
+            mergeContext.trackChange(movedObj, debug: 'moved');
+          }
+          // else 7
           movedObj.merge(mergeContext, otherObj);
         }
       } else {
+        // 1,4,5
         meObj.merge(mergeContext, otherObj);
       }
     }
