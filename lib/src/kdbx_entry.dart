@@ -18,7 +18,6 @@ import 'package:path/path.dart' as path;
 import 'package:quiver/check.dart';
 import 'package:xml/xml.dart';
 
-
 final _logger = Logger('kdbx.kdbx_entry');
 
 class KdbxKeyCommon {
@@ -135,7 +134,7 @@ extension KdbxEntryInternal on KdbxEntry {
     autoType.overwriteFrom(other.autoType);
     if (includeHistory) {
       for (final historyEntry in other.history) {
-        history.add(historyEntry.cloneInto(parent!, toHistoryEntry: false));
+        history.add(historyEntry.cloneInto(parent, toHistoryEntry: false));
       }
     }
   }
@@ -227,6 +226,9 @@ class KdbxEntry extends KdbxObject {
 
   final KdbxCustomData customData;
   final KdbxAutoType autoType;
+
+  @override
+  KdbxGroup get parent => super.parent!;
 
   @override
   set file(KdbxFile file) {
@@ -415,7 +417,7 @@ class KdbxEntry extends KdbxObject {
       if (historyEntry == null) {
         // it seems like we don't know about that state, so we have to add
         // it to history.
-        history.add(other.cloneInto(parent!, toHistoryEntry: true));
+        history.add(other.cloneInto(parent, toHistoryEntry: true));
       }
     } else {
       _logger.finest('$this has no changes.');
@@ -430,7 +432,7 @@ class KdbxEntry extends KdbxObject {
           debug: 'merge in history '
               '${otherHistoryEntry.times.lastModificationTime.get()}',
         );
-        history.add(otherHistoryEntry.cloneInto(parent!, toHistoryEntry: true));
+        history.add(otherHistoryEntry.cloneInto(parent, toHistoryEntry: true));
       }
     }
     mergeContext.markAsMerged(this);

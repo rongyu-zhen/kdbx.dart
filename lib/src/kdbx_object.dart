@@ -259,6 +259,10 @@ abstract class KdbxObject extends KdbxNode {
     });
   }
 
+  void detachFromParent() {
+    modify(() => _parent = null);
+  }
+
   void merge(MergeContext mergeContext, covariant KdbxObject other);
 
   bool isInRecycleBin() {

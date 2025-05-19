@@ -16,7 +16,6 @@ import 'package:kdbx/src/internal/crypto_utils.dart';
 import 'package:kdbx/src/internal/extension_utils.dart';
 import 'package:kdbx/src/kdbx_deleted_object.dart';
 import 'package:kdbx/src/kdbx_entry.dart';
-import 'package:kdbx/src/kdbx_group.dart';
 import 'package:kdbx/src/kdbx_header.dart';
 import 'package:kdbx/src/utils/byte_utils.dart';
 import 'package:kdbx/src/utils/sequence.dart';
@@ -120,7 +119,7 @@ class KdbxReadWriteContext {
   }
 
   void addDeletedObject(KdbxUuid uuid, [DateTime? now]) {
-    _deletedObjects.add(KdbxDeletedObject.create(this, uuid));
+    _deletedObjects.add(KdbxDeletedObject.create(this, uuid, now));
   }
 }
 
@@ -221,7 +220,7 @@ class KdbxBody extends KdbxNode {
     // sync deleted objects.
     final deleted =
         Map.fromEntries(ctx._deletedObjects.map((e) => MapEntry(e.uuid, e)));
-    final incomingDeleted = <KdbxUuid?, KdbxDeletedObject>{};
+    final incomingDeleted = <KdbxUuid, KdbxDeletedObject>{};
 
     for (final obj in other.ctx._deletedObjects) {
       if (!deleted.containsKey(obj.uuid)) {
@@ -253,24 +252,18 @@ class KdbxBody extends KdbxNode {
       final object = mergeContext.objectIndex[incomingDelete.uuid];
       if (object == null) {
         mergeContext.trackWarning(
-            'Incoming deleted object not found locally ${incomingDelete.uuid}');
+            '${incomingDelete.uuid} was not found in current object index so could not be deleted. Probably this is because the object was created and deleted before this KDBX file ever saw it.');
         continue;
       }
-      final parent = object.parent;
-      if (parent == null) {
+      if (object.parent == null) {
         mergeContext.trackWarning('Unable to delete object $object - '
             'already deleted? (${incomingDelete.uuid})');
         continue;
       }
-      if (object is KdbxGroup) {
-        parent.internalRemoveGroup(object);
-      } else if (object is KdbxEntry) {
-        parent.internalRemoveEntry(object);
-      } else {
-        throw StateError('Invalid object type $object');
-      }
-      mergeContext.trackChange(object, debug: 'was deleted.');
+      object.file.delete(object, alreadyTracked: true);
+      mergeContext.trackChange(object, debug: 'deleted');
     }
+
 
     cleanup();
 
@@ -325,8 +318,8 @@ class KdbxBody extends KdbxNode {
 
     meta.customIcons.forEach((key, value) {
       if (!usedCustomIcons.contains(key)) {
-        ctx._deletedObjects.add(KdbxDeletedObject.create(ctx, key, now));
-        unusedCustomIcons.add(key!);
+        ctx.addDeletedObject(key, now);
+        unusedCustomIcons.add(key);
       }
     });
 
@@ -421,7 +414,7 @@ class MergeWarning {
 class MergeContext implements OverwriteContext {
   MergeContext({required this.objectIndex, required this.deletedObjects});
   final Map<KdbxUuid, KdbxObject> objectIndex;
-  final Map<KdbxUuid?, KdbxDeletedObject> deletedObjects;
+  final Map<KdbxUuid, KdbxDeletedObject> deletedObjects;
   final Map<KdbxUuid, KdbxObject> merged = {};
   final List<MergeChange> changes = [];
   final List<MergeWarning> warnings = [];

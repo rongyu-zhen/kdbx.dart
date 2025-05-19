@@ -36,7 +36,7 @@ extension KdbxDao on KdbxFile {
       kdbxObject.internalChangeParent(toGroup);
       toGroup.addGroup(kdbxObject);
     } else if (kdbxObject is KdbxEntry) {
-      kdbxObject.parent!.internalRemoveEntry(kdbxObject);
+      kdbxObject.parent.internalRemoveEntry(kdbxObject);
       kdbxObject.internalChangeParent(toGroup);
       toGroup.addEntry(kdbxObject);
     }
@@ -62,5 +62,18 @@ extension KdbxDao on KdbxFile {
     }
     kdbxObject.times.locationChanged.set(now);
     kdbxObject.internalChangeParent(null);
+  }
+
+  void delete(KdbxObject kdbxObject, {bool alreadyTracked = false}) {
+    if (kdbxObject is KdbxGroup) {
+      kdbxObject.parent!.internalRemoveGroup(kdbxObject);
+    } else if (kdbxObject is KdbxEntry) {
+      kdbxObject.parent.internalRemoveEntry(kdbxObject);
+    }
+    //TODO:f: This unnecessarily creates a history item on the entry that is about to be deleted.
+    kdbxObject.detachFromParent();
+    if (!alreadyTracked) {
+      ctx.addDeletedObject(kdbxObject.uuid);
+    }
   }
 }

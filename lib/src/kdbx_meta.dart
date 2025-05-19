@@ -89,9 +89,9 @@ class KdbxMeta extends KdbxNode implements KdbxNodeContext {
   /// only used in Kdbx 3
   final List<KdbxBinary>? binaries;
 
-  final Map<KdbxUuid?, KdbxCustomIcon> _customIcons;
+  final Map<KdbxUuid, KdbxCustomIcon> _customIcons;
 
-  Map<KdbxUuid?, KdbxCustomIcon> get customIcons =>
+  Map<KdbxUuid, KdbxCustomIcon> get customIcons =>
       UnmodifiableMapView(_customIcons);
 
   void addCustomIcon(KdbxCustomIcon customIcon) {
