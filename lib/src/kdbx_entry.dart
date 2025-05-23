@@ -162,7 +162,6 @@ class KdbxEntry extends KdbxObject {
     this.isHistoryEntry = false,
   })  : history = [],
         customData = KdbxCustomData.create(),
-        autoType = KdbxAutoType.create(),
         super.create(file.ctx, file, 'Entry', parent) {
     icon.set(KdbxIcon.Key);
   }
@@ -174,10 +173,6 @@ class KdbxEntry extends KdbxObject {
                 .singleElement(KdbxXml.NODE_CUSTOM_DATA)
                 ?.let((e) => KdbxCustomData.read(e)) ??
             KdbxCustomData.create(),
-        autoType = node
-                .singleElement(KdbxXml.NODE_AUTO_TYPE)
-                ?.let((e) => KdbxAutoType.read(e)) ??
-            KdbxAutoType.create(),
         super.read(ctx, parent, node) {
     _strings.addEntries(node.findElements(KdbxXml.NODE_STRING).map((el) {
       final key = KdbxKey(el.findElements(KdbxXml.NODE_KEY).single.innerText);
@@ -224,8 +219,13 @@ class KdbxEntry extends KdbxObject {
   StringNode get overrideURL => StringNode(this, 'OverrideURL');
   StringNode get tags => StringNode(this, 'Tags');
 
+  KdbxAutoTypeNode? _autoTypeNode;
+  KdbxAutoTypeNode get autoType {
+    _autoTypeNode ??= KdbxAutoTypeNode.create(this);
+    return _autoTypeNode!;
+  }
+
   final KdbxCustomData customData;
-  final KdbxAutoType autoType;
 
   @override
   KdbxGroup get parent => super.parent!;
@@ -253,7 +253,9 @@ class KdbxEntry extends KdbxObject {
 
   @override
   XmlElement toXml() {
-    final el = super.toXml()..replaceSingle(customData.toXml());
+    final el = super.toXml()
+      ..replaceSingle(customData.toXml())
+      ..replaceSingle(autoType.toXml());
     XmlUtils.removeChildrenByName(el, KdbxXml.NODE_STRING);
     XmlUtils.removeChildrenByName(el, KdbxXml.NODE_HISTORY);
     XmlUtils.removeChildrenByName(el, KdbxXml.NODE_BINARY);
