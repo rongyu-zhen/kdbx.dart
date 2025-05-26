@@ -54,20 +54,21 @@ mixin Changeable<T> {
   /// from false to true)
   @protected
   @mustCallSuper
-  void onAfterModify() {}
+  void onAfterModify({bool preserveModificationTime = false}) {}
 
   /// Called after the all modifications
   @protected
   @mustCallSuper
-  void onAfterAnyModify() {}
+  void onAfterAnyModify({bool preserveModificationTime = false}) {}
 
-  RET modify<RET>(RET Function() modify) {
+  RET modify<RET>(RET Function() modify,
+      {bool preserveModificationTime = false}) {
     if (isDirty || _isInModify) {
       try {
         return modify();
       } finally {
         _isDirty = TimeSequence.now();
-        onAfterAnyModify();
+        onAfterAnyModify(preserveModificationTime: preserveModificationTime);
       }
     }
     _isInModify = true;
@@ -77,8 +78,8 @@ mixin Changeable<T> {
     } finally {
       _isDirty = TimeSequence.now();
       _isInModify = false;
-      onAfterModify();
-      onAfterAnyModify();
+      onAfterModify(preserveModificationTime: preserveModificationTime);
+      onAfterAnyModify(preserveModificationTime: preserveModificationTime);
       _controller.add(ChangeEvent(object: this as T, isDirty: isDirty));
     }
   }
@@ -220,18 +221,12 @@ abstract class KdbxObject extends KdbxNode {
     }
   }
 
-  // @override
-  // void onAfterModify() {
-  //   super.onAfterModify();
-  //   times.modifiedNow();
-  //   // during initial `create` the file will be null.
-  //   file?.dirtyObject(this);
-  // }
-
   @override
-  void onAfterAnyModify() {
-    super.onAfterAnyModify();
-    times.modifiedNow();
+  void onAfterAnyModify({bool preserveModificationTime = false}) {
+    super.onAfterAnyModify(preserveModificationTime: preserveModificationTime);
+    if (!preserveModificationTime) {
+      times.modifiedNow();
+    }
     // during initial `create` the file will be null.
     _file?.dirtyObject(this);
   }

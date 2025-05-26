@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart' show IterableExtension;
@@ -96,6 +97,7 @@ extension KdbxEntryInternal on KdbxEntry {
         backgroundColor,
         overrideURL,
         tags,
+        defaultSequence
       ];
 
   void _overwriteFrom(
@@ -131,10 +133,9 @@ extension KdbxEntryInternal on KdbxEntry {
     _binaries.addAll(newBinaries);
     customData.overwriteFrom(other.customData);
     times.overwriteFrom(other.times);
-    autoType.overwriteFrom(other.autoType);
     if (includeHistory) {
       for (final historyEntry in other.history) {
-        history.add(historyEntry.cloneInto(parent, toHistoryEntry: false));
+        history.add(historyEntry.cloneInto(parent, toHistoryEntry: true));
       }
     }
   }
@@ -218,12 +219,7 @@ class KdbxEntry extends KdbxObject {
   ColorNode get backgroundColor => ColorNode(this, 'BackgroundColor');
   StringNode get overrideURL => StringNode(this, 'OverrideURL');
   StringNode get tags => StringNode(this, 'Tags');
-
-  KdbxAutoTypeNode? _autoTypeNode;
-  KdbxAutoTypeNode get autoType {
-    _autoTypeNode ??= KdbxAutoTypeNode.create(this);
-    return _autoTypeNode!;
-  }
+  DefaultSequenceNode get defaultSequence => DefaultSequenceNode(this);
 
   final KdbxCustomData customData;
 
@@ -253,9 +249,8 @@ class KdbxEntry extends KdbxObject {
 
   @override
   XmlElement toXml() {
-    final el = super.toXml()
-      ..replaceSingle(customData.toXml())
-      ..replaceSingle(autoType.toXml());
+    final el = super.toXml()..replaceSingle(customData.toXml());
+
     XmlUtils.removeChildrenByName(el, KdbxXml.NODE_STRING);
     XmlUtils.removeChildrenByName(el, KdbxXml.NODE_HISTORY);
     XmlUtils.removeChildrenByName(el, KdbxXml.NODE_BINARY);
@@ -410,12 +405,18 @@ class KdbxEntry extends KdbxObject {
     if (other.wasModifiedAfter(this)) {
       _logger.finest('$this has incoming changes.');
       // other object is newer, create new history entry and copy fields.
-      modify(() => _overwriteFrom(mergeContext, other));
+      modify(
+        () => _overwriteFrom(mergeContext, other),
+        preserveModificationTime: true,
+      );
     } else if (wasModifiedAfter(other)) {
       _logger.finest('$this has outgoing changes.');
       // we are newer. check if the old revision lives on in our history.
-      final ourLastModificationTime = times.lastModificationTime.get();
-      final historyEntry = _findHistoryEntry(history, ourLastModificationTime);
+      final theirLastModificationTime = other.times.lastModificationTime.get();
+      final historyEntry = _findHistoryEntry(
+        history,
+        theirLastModificationTime,
+      );
       if (historyEntry == null) {
         // it seems like we don't know about that state, so we have to add
         // it to history.
@@ -424,20 +425,33 @@ class KdbxEntry extends KdbxObject {
     } else {
       _logger.finest('$this has no changes.');
     }
-    // copy missing history entries.
-    for (final otherHistoryEntry in other.history) {
-      final meHistoryEntry = _findHistoryEntry(
-          history, otherHistoryEntry.times.lastModificationTime.get());
-      if (meHistoryEntry == null) {
+
+    mergeEntryHistory(mergeContext, history, other.history);
+
+    mergeContext.markAsMerged(this);
+  }
+
+  void mergeEntryHistory(MergeContext mergeContext, List<KdbxEntry> history,
+      List<KdbxEntry> otherHistory) {
+    final dict = SplayTreeMap<DateTime?, KdbxEntry>();
+
+    for (final historyEntry in history) {
+      dict[historyEntry.times.lastModificationTime.get()] = historyEntry;
+    }
+
+    for (final historyEntry in otherHistory) {
+      final key = historyEntry.times.lastModificationTime.get();
+      if (!dict.containsKey(key)) {
+        dict[key] = historyEntry.cloneInto(parent, toHistoryEntry: true);
         mergeContext.trackChange(
           this,
-          debug: 'merge in history '
-              '${otherHistoryEntry.times.lastModificationTime.get()}',
+          debug: 'merge in history $key',
         );
-        history.add(otherHistoryEntry.cloneInto(parent, toHistoryEntry: true));
       }
     }
-    mergeContext.markAsMerged(this);
+
+    history.clear();
+    history.addAll(dict.values);
   }
 
   String? debugLabel() => label ?? _plainValue(KdbxKeyCommon.USER_NAME);
